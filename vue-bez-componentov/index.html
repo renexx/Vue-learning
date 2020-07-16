@@ -1,0 +1,75 @@
+<!DOCTYPE  html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <title>APP</title>
+    </head>
+    <body>
+        <div id="app">
+            <h1>COOL APP</h1>
+            <transition-group name="dude" tag="ul"> <!-- transition-group pre animaciu viacerych prvkov je to namiesto ul elementu a tag="ul" to znači-->
+                <li class="dude" v-for="(dude,index) in characters" :key="index"> <!--lebo transition-group potrebuje key cize nejake id ale mi id nemame tak vytvorime index a to bude nas key-->
+                    <a class="ctrl" @click.prevent="remove(dude)">x</a>
+                    <article :class="{faded: dude.cool < 10, gold: dude.cool > 50 }"> <!-- hej ty article ak niekomu klesne cool pod 10 daj mu class faded inak ak mu stupne cez 50 tak gold-->
+                        {{ dude.who}}
+                        <span>{{dude.what}}</span>
+                    </article>
+                    <input type="number" class="ctrl" v-model.number="dude.cool"> <!-- v.model.number prepojenie plus specifikovanie,že sa bude jednat vždy o čislo-->
+                </li>
+            </transition-group>
+               
+           
+          <!-- namiesto sumbit.prevent sa dalo keydown enter pretoze vkladame dve inputy a to by jeden enter nestacil potrebovali by sme button a to nechceme-->
+         
+            <form class="add-new" @keydown.enter="add"> <!-- sumbit.prevent zabranim klasickemu spravaniu submit a to je take ze by sa to refreshlo pri odoslani-->
+                <input type="text" v-model="newWho" ref="new" autofocus> <!--v model je obojstrane bindovanie-->
+                <br>
+                <input type="text" v-model="newWhat">
+            </form>
+            <p class="preview">
+                {{newWho}} <br>
+                <small>{{newWhat}}</small>
+            </p>
+        </div>
+        <script>
+        const app = new Vue({
+            el:"#app",
+            data:{
+               newWho:"",
+               newWhat:"",
+                characters:[],
+            },
+            methods: {
+                add(){ //funkcia add ktora sa zavola ked stlačime enter vo formulari
+                    if(!this.newWho || !this.newWhat) return // ak neni nic zadane aby sa nedalo pridavat
+                    this.characters.push({
+                        who:this.newWho,
+                        what:this.newWhat,
+                        cool: 15
+                    })
+                    this.newWhat = "",  // aby po pridani sa to vycistilo a boli prazdne inputy
+                    this.newWho = ""
+
+                    this.$refs.new.focus() // tam kde sa chceme focusnut tak dame ref = "new"
+                },
+                remove(dude){
+                    this.characters = this.characters.filter(item => item !== dude) // charaktery odfilturejm vsetky itemi ktore sa item nerovna dudovi, zostanu iab tie ktore niesu dude tie na ktore som neklikol
+                }
+            },
+            created(){ //spusti sa kod potom co sa vytvori vue instancia
+                fetch('https://gist.githubusercontent.com/yablko/035b44dd8d63d586e6763872beb3547e/raw/0f3d18326492a6670bc259a78a98e4c702059d81/dudes.json')
+                    .then(res => res.json())
+                    .then(json => this.characters = json)
+            
+         }
+        })
+        </script>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    </body>
+</html>
